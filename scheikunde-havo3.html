@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1D9E75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Scheikunde">
+<title>Scheikunde Havo 3 — Atomen & Moleculen</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f8f6; color: #1a1a1a; }
+@media (prefers-color-scheme: dark) {
+  body { background: #111110; color: #f0f0ee; }
+  .card, .detail-panel, .binding-card, .mol-card, .atom-card { background: #1e1e1c !important; border-color: rgba(255,255,255,0.1) !important; }
+  .nav-btn { background: #1e1e1c !important; border-color: rgba(255,255,255,0.15) !important; color: #aaa !important; }
+  .atom-card, .mol-card { background: #1e1e1c !important; }
+  .detail-row { border-color: rgba(255,255,255,0.08) !important; }
+  .detail-row span:first-child { color: #aaa !important; }
+  table th { background: #2a2a28 !important; color: #aaa !important; }
+  table td { border-color: rgba(255,255,255,0.08) !important; }
+  .binding-visual { background: #2a2a28 !important; color: #f0f0ee !important; }
+  .shell-diagram .dot-empty { background: #2a2a28 !important; border-color: rgba(255,255,255,0.2) !important; color: #888 !important; }
+  .quiz-opt { background: #1e1e1c !important; border-color: rgba(255,255,255,0.15) !important; color: #f0f0ee !important; }
+  .progress-bar { background: #2a2a28 !important; }
+  .score-bar { color: #aaa !important; }
+  .subtitle, .card-body, .binding-desc, .mol-name, .atom-num, .atom-name { color: #aaa !important; }
+  h2, .card-title, .binding-title, .mol-formula, .atom-symbol { color: #f0f0ee !important; }
+  .detail-info h3 { color: #f0f0ee !important; }
+  .detail-info p { color: #aaa !important; }
+  .detail-row span:last-child { color: #f0f0ee !important; }
+}
+
+.app { max-width: 500px; margin: 0 auto; padding-bottom: 40px; }
+
+.header { background: #0F6E56; color: white; padding: 20px 16px 16px; }
+.header h1 { font-size: 20px; font-weight: 500; }
+.header p { font-size: 13px; opacity: 0.8; margin-top: 3px; }
+
+.nav { display: flex; gap: 6px; padding: 14px 14px 0; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+  border: 1px solid #ccc; background: white; color: #555;
+  font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.nav-btn.active { background: #1D9E75; color: white; border-color: #1D9E75; }
+
+.section { display: none; padding: 16px 14px; }
+.section.active { display: block; }
+
+h2 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 16px; }
+
+.card { background: white; border: 1px solid #e8e8e6; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+.card-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+.card-body { font-size: 14px; color: #555; line-height: 1.65; }
+
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.badge-teal { background: #E1F5EE; color: #0F6E56; }
+.badge-blue { background: #E6F1FB; color: #185FA5; }
+.badge-amber { background: #FAEEDA; color: #854F0B; }
+.badge-purple { background: #EEEDFE; color: #534AB7; }
+
+.atom-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.atom-card { background: #f4f4f2; border: 1px solid #e8e8e6; border-radius: 10px; padding: 14px; cursor: pointer; transition: transform 0.1s; }
+.atom-card:hover { transform: scale(1.02); }
+.atom-symbol { font-size: 34px; font-weight: 500; line-height: 1; }
+.atom-name { font-size: 13px; color: #555; margin-top: 3px; }
+.atom-num { font-size: 11px; color: #999; margin-top: 1px; }
+
+.detail-panel { background: white; border: 1px solid #e8e8e6; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.detail-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+.detail-symbol { width: 64px; height: 64px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 500; flex-shrink: 0; }
+.detail-info h3 { font-size: 18px; font-weight: 500; }
+.detail-info p { font-size: 13px; color: #666; margin-top: 2px; }
+.detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-top: 1px solid #f0f0ee; font-size: 14px; gap: 12px; }
+.detail-row span:first-child { color: #777; flex-shrink: 0; }
+.detail-row span:last-child { font-weight: 500; text-align: right; }
+
+.shell-diagram { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.shell-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.shell-label { color: #777; width: 72px; flex-shrink: 0; }
+.shell-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+.dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; }
+.dot-filled { background: #1D9E75; color: white; }
+.dot-empty { background: #f0f0ee; border: 1px solid #ddd; color: #bbb; }
+
+.mol-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.mol-card { background: white; border: 1px solid #e8e8e6; border-radius: 12px; padding: 14px; cursor: pointer; transition: transform 0.1s; }
+.mol-card:hover { transform: scale(1.02); }
+.mol-formula { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
+.mol-name { font-size: 13px; color: #666; }
+.mol-type { margin-top: 8px; }
+
+.binding-card { background: white; border: 1px solid #e8e8e6; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+.binding-title { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+.binding-visual { background: #f4f4f2; border-radius: 10px; padding: 16px; margin: 10px 0; text-align: center; font-size: 26px; letter-spacing: 3px; font-family: monospace; }
+.binding-desc { font-size: 14px; color: #555; line-height: 1.65; }
+
+.table-wrap { overflow-x: auto; margin-bottom: 14px; border-radius: 10px; border: 1px solid #e8e8e6; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: #f4f4f2; color: #666; padding: 10px 12px; text-align: left; font-weight: 500; }
+td { padding: 9px 12px; border-top: 1px solid #f0f0ee; }
+
+.tip-box { background: #E1F5EE; border-radius: 10px; padding: 13px 15px; margin-bottom: 14px; font-size: 14px; color: #085041; line-height: 1.6; }
+
+.back-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1D9E75; cursor: pointer; margin-bottom: 12px; background: none; border: none; padding: 0; font-family: inherit; }
+
+.quiz-q { font-size: 16px; font-weight: 500; margin-bottom: 6px; line-height: 1.5; }
+.quiz-hint { font-size: 13px; color: #777; margin-bottom: 16px; }
+.quiz-options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px; }
+.quiz-opt { padding: 13px 16px; border: 1px solid #ccc; border-radius: 10px; background: white; font-size: 14px; cursor: pointer; text-align: left; width: 100%; font-family: inherit; transition: background 0.1s; }
+.quiz-opt:hover { background: #f8f8f6; }
+.quiz-opt.correct { background: #E1F5EE; border-color: #1D9E75; color: #0F6E56; font-weight: 500; }
+.quiz-opt.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+.quiz-opt.disabled { cursor: default; }
+.quiz-feedback { padding: 13px 16px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; line-height: 1.55; display: none; }
+.quiz-feedback.correct { background: #E1F5EE; color: #085041; }
+.quiz-feedback.wrong { background: #FCEBEB; color: #791F1F; }
+.quiz-next { width: 100%; padding: 13px; border-radius: 10px; background: #1D9E75; color: white; border: none; font-size: 15px; font-weight: 500; cursor: pointer; display: none; font-family: inherit; }
+.progress-bar { height: 5px; background: #e8e8e6; border-radius: 3px; margin-bottom: 16px; }
+.progress-fill { height: 100%; background: #1D9E75; border-radius: 3px; transition: width 0.3s; }
+.score-bar { display: flex; justify-content: space-between; font-size: 13px; color: #777; margin-bottom: 10px; }
+
+.result-screen { text-align: center; padding: 28px 0 16px; }
+.result-score { font-size: 56px; font-weight: 500; color: #1D9E75; }
+.result-label { font-size: 16px; color: #666; margin: 6px 0 24px; }
+.restart-btn { width: 100%; padding: 14px; border-radius: 10px; background: #1D9E75; color: white; border: none; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 16px; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Scheikunde Havo 3</h1>
+    <p>Atomen, bindingen &amp; moleculen</p>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showSection('atomen', this)">Atomen</button>
+    <button class="nav-btn" onclick="showSection('bindingen', this)">Bindingen</button>
+    <button class="nav-btn" onclick="showSection('moleculen', this)">Moleculen</button>
+    <button class="nav-btn" onclick="showSection('formules', this)">Formules</button>
+    <button class="nav-btn" onclick="showSection('toets', this)">Toets</button>
+  </div>
+
+  <!-- ATOMEN -->
+  <div id="sec-atomen" class="section active">
+    <h2>Atomen</h2>
+    <p class="subtitle">Klik op een atoom voor uitleg over elektronenschillen en bindingswaarde.</p>
+    <div class="tip-box"><strong>Kernbegrip:</strong> Elk atoom heeft een kern (protonen + neutronen) en schillen met elektronen. Het aantal elektronen in de buitenste schil bepaalt hoe een atoom reageert.</div>
+
+    <div id="atom-list">
+      <div class="atom-grid">
+        <div class="atom-card" onclick="showAtom(0)"><div class="atom-symbol" style="color:#185FA5">H</div><div class="atom-name">Waterstof</div><div class="atom-num">Atoomnummer 1</div></div>
+        <div class="atom-card" onclick="showAtom(1)"><div class="atom-symbol" style="color:#A32D2D">O</div><div class="atom-name">Zuurstof</div><div class="atom-num">Atoomnummer 8</div></div>
+        <div class="atom-card" onclick="showAtom(2)"><div class="atom-symbol" style="color:#534AB7">C</div><div class="atom-name">Koolstof</div><div class="atom-num">Atoomnummer 6</div></div>
+        <div class="atom-card" onclick="showAtom(3)"><div class="atom-symbol" style="color:#3B6D11">N</div><div class="atom-name">Stikstof</div><div class="atom-num">Atoomnummer 7</div></div>
+        <div class="atom-card" onclick="showAtom(4)"><div class="atom-symbol" style="color:#993C1D">Na</div><div class="atom-name">Natrium</div><div class="atom-num">Atoomnummer 11</div></div>
+        <div class="atom-card" onclick="showAtom(5)"><div class="atom-symbol" style="color:#854F0B">Cl</div><div class="atom-name">Chloor</div><div class="atom-num">Atoomnummer 17</div></div>
+        <div class="atom-card" onclick="showAtom(6)"><div class="atom-symbol" style="color:#0F6E56">Ca</div><div class="atom-name">Calcium</div><div class="atom-num">Atoomnummer 20</div></div>
+        <div class="atom-card" onclick="showAtom(7)"><div class="atom-symbol" style="color:#72243E">Mg</div><div class="atom-name">Magnesium</div><div class="atom-num">Atoomnummer 12</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Schillenregel</div>
+        <div class="card-body">
+          Elektronen zitten in schillen om de kern:<br>
+          • Schil 1: maximaal <strong>2</strong> elektronen<br>
+          • Schil 2: maximaal <strong>8</strong> elektronen<br>
+          • Schil 3: maximaal <strong>8</strong> elektronen<br><br>
+          Atomen zijn stabiel als de buitenste schil <strong>vol</strong> is (edelgasconfiguratie). Dit is de drijvende kracht achter het vormen van verbindingen.
+        </div>
+      </div>
+    </div>
+
+    <div id="atom-detail" style="display:none">
+      <button class="back-btn" onclick="document.getElementById('atom-list').style.display=''; document.getElementById('atom-detail').style.display='none'">← Terug naar overzicht</button>
+      <div class="detail-panel">
+        <div class="detail-header">
+          <div class="detail-symbol" id="d-symbol-box"></div>
+          <div class="detail-info"><h3 id="d-name"></h3><p id="d-latin"></p><p id="d-group" style="margin-top:4px"></p></div>
+        </div>
+        <div class="detail-row"><span>Atoomnummer</span><span id="d-num"></span></div>
+        <div class="detail-row"><span>Atoommassa</span><span id="d-mass"></span></div>
+        <div class="detail-row"><span>Valentie-elektronen</span><span id="d-valence"></span></div>
+        <div class="detail-row"><span>Bindingswaarde</span><span id="d-binding"></span></div>
+        <div class="detail-row"><span>Elektronegativiteit</span><span id="d-en"></span></div>
+        <div style="margin-top:12px;font-size:13px;color:#777;margin-bottom:4px">Elektronenschillen</div>
+        <div class="shell-diagram" id="d-shells"></div>
+        <div style="margin-top:12px;font-size:14px;line-height:1.65;color:#555" id="d-desc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BINDINGEN -->
+  <div id="sec-bindingen" class="section">
+    <h2>Soorten bindingen</h2>
+    <p class="subtitle">Er zijn drie soorten bindingen. Ze verschillen in hoe elektronen worden gedeeld of overgedragen.</p>
+
+    <div class="binding-card">
+      <div class="binding-title"><span class="badge badge-teal">Atoombinding (covalent)</span></div>
+      <div class="binding-visual">H — H</div>
+      <div class="binding-desc">Twee <strong>niet-metalen</strong> delen elektronen met elkaar. De elektronen behoren aan beide atomen tegelijk. Beide atomen worden hierdoor stabiel.</div>
+      <div style="margin-top:10px">
+        <div class="detail-row"><span>Deelnemers</span><span>Twee niet-metalen</span></div>
+        <div class="detail-row"><span>Elektronen</span><span>Gedeeld</span></div>
+        <div class="detail-row"><span>Resultaat</span><span>Moleculen</span></div>
+      </div>
+      <div style="margin-top:10px">
+        <span class="badge badge-teal" style="margin:2px">H₂</span>
+        <span class="badge badge-teal" style="margin:2px">H₂O</span>
+        <span class="badge badge-teal" style="margin:2px">CO₂</span>
+        <span class="badge badge-teal" style="margin:2px">NH₃</span>
+        <span class="badge badge-teal" style="margin:2px">CH₄</span>
+      </div>
+    </div>
+
+    <div class="binding-card">
+      <div class="binding-title"><span class="badge badge-blue">Ionbinding</span></div>
+      <div class="binding-visual">Na⁺ · · · Cl⁻</div>
+      <div class="binding-desc">Een <strong>metaal</strong> geeft één of meer elektronen af aan een <strong>niet-metaal</strong>. Het metaal wordt een positief ion (kation), het niet-metaal een negatief ion (anion). Ze trekken elkaar aan door de tegengestelde lading.</div>
+      <div style="margin-top:10px">
+        <div class="detail-row"><span>Deelnemers</span><span>Metaal + niet-metaal</span></div>
+        <div class="detail-row"><span>Elektronen</span><span>Overgedragen</span></div>
+        <div class="detail-row"><span>Resultaat</span><span>Ionrooster (zout)</span></div>
+      </div>
+      <div style="margin-top:10px">
+        <span class="badge badge-blue" style="margin:2px">NaCl</span>
+        <span class="badge badge-blue" style="margin:2px">MgO</span>
+        <span class="badge badge-blue" style="margin:2px">CaCl₂</span>
+        <span class="badge badge-blue" style="margin:2px">KBr</span>
+      </div>
+    </div>
+
+    <div class="binding-card">
+      <div class="binding-title"><span class="badge badge-amber">Metaalbinding</span></div>
+      <div class="binding-visual">Fe · e⁻ · e⁻ · Fe</div>
+      <div class="binding-desc">In een <strong>metaal</strong> bewegen elektronen vrij door het rooster van positieve ionen. Die vrije elektronen houden het metaal bijeen. Dit verklaart waarom metalen goed geleiden.</div>
+      <div style="margin-top:10px">
+        <div class="detail-row"><span>Deelnemers</span><span>Metalen</span></div>
+        <div class="detail-row"><span>Elektronen</span><span>Vrij bewegend</span></div>
+        <div class="detail-row"><span>Resultaat</span><span>Metaalrooster</span></div>
+      </div>
+      <div style="margin-top:10px">
+        <span class="badge badge-amber" style="margin:2px">Fe</span>
+        <span class="badge badge-amber" style="margin:2px">Cu</span>
+        <span class="badge badge-amber" style="margin:2px">Al</span>
+        <span class="badge badge-amber" style="margin:2px">Na</span>
+      </div>
+    </div>
+
+    <div class="tip-box"><strong>Ezelsbruggetje:</strong> Metaal + niet-metaal = ionbinding. Twee niet-metalen = atoombinding. Alleen metalen = metaalbinding.</div>
+
+    <div class="card">
+      <div class="card-title">Polair vs apolair</div>
+      <div class="card-body">
+        Bij een atoombinding kunnen elektronen ongelijk verdeeld zijn als de atomen <strong>verschillen in elektronegativiteit</strong>.<br><br>
+        • <strong>Apolair:</strong> elektronen gelijk verdeeld — bijv. H₂, Cl₂, O₂<br>
+        • <strong>Polair:</strong> elektronen ongelijk verdeeld — bijv. H₂O (zuurstof trekt sterker)
+      </div>
+    </div>
+  </div>
+
+  <!-- MOLECULEN -->
+  <div id="sec-moleculen" class="section">
+    <h2>Moleculen</h2>
+    <p class="subtitle">Klik op een molecuul voor formule, structuur en eigenschappen.</p>
+    <div class="mol-grid">
+      <div class="mol-card" onclick="showMol(0)"><div class="mol-formula">H₂O</div><div class="mol-name">Water</div><div class="mol-type"><span class="badge badge-teal">polair</span></div></div>
+      <div class="mol-card" onclick="showMol(1)"><div class="mol-formula">CO₂</div><div class="mol-name">Koolstofdioxide</div><div class="mol-type"><span class="badge badge-purple">apolair</span></div></div>
+      <div class="mol-card" onclick="showMol(2)"><div class="mol-formula">NH₃</div><div class="mol-name">Ammoniak</div><div class="mol-type"><span class="badge badge-teal">polair</span></div></div>
+      <div class="mol-card" onclick="showMol(3)"><div class="mol-formula">CH₄</div><div class="mol-name">Methaan</div><div class="mol-type"><span class="badge badge-purple">apolair</span></div></div>
+      <div class="mol-card" onclick="showMol(4)"><div class="mol-formula">HCl</div><div class="mol-name">Waterstofchloride</div><div class="mol-type"><span class="badge badge-teal">polair</span></div></div>
+      <div class="mol-card" onclick="showMol(5)"><div class="mol-formula">O₂</div><div class="mol-name">Zuurstof</div><div class="mol-type"><span class="badge badge-purple">apolair</span></div></div>
+      <div class="mol-card" onclick="showMol(6)"><div class="mol-formula">N₂</div><div class="mol-name">Stikstof</div><div class="mol-type"><span class="badge badge-purple">apolair</span></div></div>
+      <div class="mol-card" onclick="showMol(7)"><div class="mol-formula">NaCl</div><div class="mol-name">Natriumchloride</div><div class="mol-type"><span class="badge badge-blue">ionverbinding</span></div></div>
+    </div>
+    <div id="mol-detail" style="display:none">
+      <button class="back-btn" onclick="document.getElementById('mol-detail').style.display='none'">← Terug</button>
+      <div class="detail-panel" id="mol-panel"></div>
+    </div>
+  </div>
+
+  <!-- FORMULES -->
+  <div id="sec-formules" class="section">
+    <h2>Formules opstellen</h2>
+    <p class="subtitle">Hoe schrijf je de juiste scheikundige formule? Volg de kruisregel.</p>
+
+    <div class="tip-box"><strong>De kruisregel:</strong> Gebruik de bindingswaarden (valenties) van de atomen. Zet de valentie van het ene atoom als index bij het andere, en andersom. Vereenvoudig zo mogelijk.</div>
+
+    <div class="card">
+      <div class="card-title">Voorbeeld: NaCl</div>
+      <div class="card-body">
+        1. Na heeft bindingswaarde <strong>1</strong>, Cl heeft bindingswaarde <strong>1</strong><br>
+        2. Kruisregel: Na¹Cl¹ → vereenvoudigen → <strong>NaCl</strong><br>
+        3. Indices van 1 schrijf je niet op.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Voorbeeld: CaCl₂</div>
+      <div class="card-body">
+        1. Ca heeft bindingswaarde <strong>2</strong>, Cl heeft bindingswaarde <strong>1</strong><br>
+        2. Kruisregel: Ca¹Cl² → <strong>CaCl₂</strong><br>
+        3. Ca staat eenmaal, Cl tweemaal.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Voorbeeld: Al₂O₃</div>
+      <div class="card-body">
+        1. Al heeft bindingswaarde <strong>3</strong>, O heeft bindingswaarde <strong>2</strong><br>
+        2. Kruisregel: Al²O³ → <strong>Al₂O₃</strong>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>Atoom</th><th>Symbool</th><th>Bindingswaarde</th><th>Type</th></tr>
+        <tr><td>Waterstof</td><td>H</td><td>1</td><td>Niet-metaal</td></tr>
+        <tr><td>Zuurstof</td><td>O</td><td>2</td><td>Niet-metaal</td></tr>
+        <tr><td>Stikstof</td><td>N</td><td>3</td><td>Niet-metaal</td></tr>
+        <tr><td>Koolstof</td><td>C</td><td>4</td><td>Niet-metaal</td></tr>
+        <tr><td>Chloor</td><td>Cl</td><td>1</td><td>Niet-metaal</td></tr>
+        <tr><td>Natrium</td><td>Na</td><td>1</td><td>Metaal</td></tr>
+        <tr><td>Calcium</td><td>Ca</td><td>2</td><td>Metaal</td></tr>
+        <tr><td>Magnesium</td><td>Mg</td><td>2</td><td>Metaal</td></tr>
+        <tr><td>Aluminium</td><td>Al</td><td>3</td><td>Metaal</td></tr>
+        <tr><td>IJzer</td><td>Fe</td><td>2 of 3</td><td>Metaal</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Naamgeving</div>
+      <div class="card-body">
+        • Twee niet-metalen: gebruik <strong>Grieks</strong> voor aantallen (mono-, di-, tri-, tetra-)<br>
+        → CO₂ = koolstof<strong>di</strong>oxide<br><br>
+        • Metaal + niet-metaal: naam metaal + naam niet-metaal + <strong>-ide</strong><br>
+        → NaCl = natrium<strong>chloride</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOETS -->
+  <div id="sec-toets" class="section">
+    <h2>Oefen je kennis</h2>
+    <p class="subtitle">20 vragen over alle stof — met uitleg bij elk antwoord.</p>
+    <div id="quiz-main">
+      <div class="score-bar">
+        <span id="q-counter">Vraag 1 van 20</span>
+        <span id="q-score">Score: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="q-progress" style="width:5%"></div></div>
+      <div class="card">
+        <div class="quiz-q" id="q-text"></div>
+        <div class="quiz-hint" id="q-hint"></div>
+        <div class="quiz-options" id="q-options"></div>
+        <div class="quiz-feedback" id="q-feedback"></div>
+        <button class="quiz-next" id="q-next" onclick="nextQ()">Volgende vraag →</button>
+      </div>
+    </div>
+    <div id="quiz-result" style="display:none">
+      <div class="result-screen">
+        <div class="result-score" id="r-score"></div>
+        <div class="result-label" id="r-label"></div>
+        <div class="card">
+          <div class="card-title">Jouw resultaat</div>
+          <div class="card-body" id="r-details"></div>
+        </div>
+        <button class="restart-btn" onclick="startQuiz()">Opnieuw proberen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const atoms = [
+  { sym:'H', name:'Waterstof', latin:'Hydrogenium', num:1, mass:'1,008 u', valence:1, binding:'1', en:'2,1', color:'#E6F1FB', textColor:'#0C447C', group:'Groep 1', shells:[{n:'Schil 1',total:1,max:2}], desc:'Waterstof heeft slechts één elektron. Het wil graag een tweede elektron erbij (schil 1 vol). Daardoor vormt het makkelijk bindingen: met zichzelf (H₂), met zuurstof (H₂O) en met koolstof (CH₄).' },
+  { sym:'O', name:'Zuurstof', latin:'Oxygenium', num:8, mass:'15,999 u', valence:6, binding:'2', en:'3,4', color:'#FCEBEB', textColor:'#791F1F', group:'Groep 16 — Chalcogenen', shells:[{n:'Schil 1',total:2,max:2},{n:'Schil 2',total:6,max:8}], desc:'Zuurstof heeft 6 valentie-elektronen en mist er 2 voor een volle schil. Bindingswaarde is 2. Het is sterk elektronegatief en trekt elektronen krachtig naar zich toe.' },
+  { sym:'C', name:'Koolstof', latin:'Carboneum', num:6, mass:'12,011 u', valence:4, binding:'4', en:'2,5', color:'#EEEDFE', textColor:'#3C3489', group:'Groep 14', shells:[{n:'Schil 1',total:2,max:2},{n:'Schil 2',total:4,max:8}], desc:'Koolstof heeft precies 4 valentie-elektronen en kan 4 bindingen vormen. Dit maakt het ideaal voor lange ketens en ringen — de basis van de organische chemie.' },
+  { sym:'N', name:'Stikstof', latin:'Nitrogenium', num:7, mass:'14,007 u', valence:5, binding:'3', en:'3,0', color:'#EAF3DE', textColor:'#27500A', group:'Groep 15 — Pnictogenen', shells:[{n:'Schil 1',total:2,max:2},{n:'Schil 2',total:5,max:8}], desc:'Stikstof heeft 5 valentie-elektronen en mist er 3. Bindingswaarde is 3. In de lucht zit N₂ met een drievoudige binding — een van de sterkste bindingen in de chemie.' },
+  { sym:'Na', name:'Natrium', latin:'Natrium', num:11, mass:'22,990 u', valence:1, binding:'1', en:'0,9', color:'#FAEEDA', textColor:'#633806', group:'Groep 1 — Alkalimetalen', shells:[{n:'Schil 1',total:2,max:2},{n:'Schil 2',total:8,max:8},{n:'Schil 3',total:1,max:8}], desc:'Natrium heeft slechts 1 valentie-elektron. Dit geeft het graag af (Na⁺). Met chloor vormt het keukenzout: NaCl.' },
+  { sym:'Cl', name:'Chloor', latin:'Chlorum', num:17, mass:'35,453 u', valence:7, binding:'1', en:'3,2', color:'#FAEEDA', textColor:'#633806', group:'Groep 17 — Halogenen', shells:[{n:'Schil 1',total:2,max:2},{n:'Schil 2',total:8,max:8},{n:'Schil 3',total:7,max:8}], desc:'Chloor heeft 7 valentie-elektronen en mist er maar 1. Het neemt graag een elektron aan (Cl⁻) of deelt er één. Bindingswaarde: 1.' },
+  { sym:'Ca', name:'Calcium', latin:'Calcium', num:20, mass:'40,078 u', valence:2, binding:'2', en:'1,0', color:'#E1F5EE', textColor:'#085041', group:'Groep 2 — Aardalkalimetalen', shells:[{n:'Schil 1',total:2,max:2},{n:'Schil 2',total:8,max:8},{n:'Schil 3',total:8,max:8},{n:'Schil 4',total:2,max:8}], desc:'Calcium heeft 2 valentie-elektronen die het makkelijk afgeeft (Ca²⁺). Het vormt ionverbindingen zoals CaCl₂ en CaO. Zit ook in botten en tanden.' },
+  { sym:'Mg', name:'Magnesium', latin:'Magnesium', num:12, mass:'24,305 u', valence:2, binding:'2', en:'1,3', color:'#FBEAF0', textColor:'#72243E', group:'Groep 2 — Aardalkalimetalen', shells:[{n:'Schil 1',total:2,max:2},{n:'Schil 2',total:8,max:8},{n:'Schil 3',total:2,max:8}], desc:'Magnesium heeft 2 valentie-elektronen en geeft die graag af (Mg²⁺). Licht metaal, gebruikt in legeringen. Met zuurstof vormt het MgO.' }
+];
+
+const molecules = [
+  { formula:'H₂O', name:'Water', type:'polair', typeClass:'badge-teal', binding:'Atoombinding', struct:'H — O — H (hoekig, 104,5°)', props:'Vloeistof bij kamertemperatuur. Kookpunt 100°C. Lost ionverbindingen op. Polair door asymmetrische vorm en het verschil in elektronegativiteit tussen O en H.', count:'2× H, 1× O', valence:'O heeft 2 vrije elektronenparen' },
+  { formula:'CO₂', name:'Koolstofdioxide', type:'apolair', typeClass:'badge-purple', binding:'Atoombinding (dubbel)', struct:'O = C = O (lineair)', props:'Gas bij kamertemperatuur. Kookpunt −78°C. Vrijgekomen bij verbranding. Hoewel de C=O bindingen polair zijn, is het molecuul door de symmetrische lineaire vorm totaal apolair.', count:'1× C, 2× O', valence:'Twee dubbele bindingen' },
+  { formula:'NH₃', name:'Ammoniak', type:'polair', typeClass:'badge-teal', binding:'Atoombinding', struct:'N met 3× H (piramide)', props:'Scherp ruikend gas. Oplossing in water is basisch. Piramidevormig molecuul, waardoor het polair is. Gebruikt als meststof en reinigingsmiddel.', count:'1× N, 3× H', valence:'N heeft 1 vrij elektronenpaar' },
+  { formula:'CH₄', name:'Methaan', type:'apolair', typeClass:'badge-purple', binding:'Atoombinding', struct:'C in midden, 4× H (tetraëder)', props:'Brandbaar gas. Hoofdbestanddeel van aardgas. Tetraëdrische symmetrische vorm maakt het apolair. Kookpunt −161°C.', count:'1× C, 4× H', valence:'C heeft geen vrije elektronenparen' },
+  { formula:'HCl', name:'Waterstofchloride', type:'polair', typeClass:'badge-teal', binding:'Atoombinding', struct:'H — Cl (lineair)', props:'Gas dat oplost in water → zoutzuur (sterk zuur). Chloor trekt elektronen sterker aan dan waterstof → polair molecuul.', count:'1× H, 1× Cl', valence:'Cl heeft 3 vrije elektronenparen' },
+  { formula:'O₂', name:'Zuurstof', type:'apolair', typeClass:'badge-purple', binding:'Atoombinding (dubbel)', struct:'O = O', props:'Gas, nodig voor ademhaling en verbranding. Twee identieke atomen trekken elektronen even sterk → apolair. Kookpunt −183°C.', count:'2× O', valence:'Dubbele binding' },
+  { formula:'N₂', name:'Stikstof', type:'apolair', typeClass:'badge-purple', binding:'Atoombinding (drievoudig)', struct:'N ≡ N', props:'78% van de lucht. Zeer stabiel door de sterke drievoudige binding. Apolair (identieke atomen). Kookpunt −196°C.', count:'2× N', valence:'Drievoudige binding + 1 vrij paar per N' },
+  { formula:'NaCl', name:'Natriumchloride', type:'ionverbinding', typeClass:'badge-blue', binding:'Ionbinding', struct:'Na⁺ en Cl⁻ in kubisch rooster', props:'Keukenzout. Hoog smeltpunt (801°C). Lost op in water. Geleidt stroom als vloeistof of in oplossing. Na geeft 1 elektron aan Cl.', count:'1× Na, 1× Cl', valence:'Na⁺ (lading +1), Cl⁻ (lading −1)' },
+];
+
+const questions = [
+  { q:'Welk type binding ontstaat tussen twee niet-metalen?', hint:'Denk aan het delen van elektronen.', opts:['Ionbinding','Metaalbinding','Atoombinding','Polaire binding'], ans:2, exp:'Twee niet-metalen vormen een atoombinding (covalente binding) door elektronen met elkaar te delen.' },
+  { q:'Hoeveel elektronen passen maximaal in schil 2?', hint:'Denk aan de schillenregel.', opts:['2','4','8','16'], ans:2, exp:'Schil 2 kan maximaal 8 elektronen bevatten. Schil 1 kan maximaal 2.' },
+  { q:'Wat is de bindingswaarde van zuurstof (O)?', hint:'O heeft 6 valentie-elektronen, schil 2 is max. 8.', opts:['1','2','3','4'], ans:1, exp:'Zuurstof heeft 6 valentie-elektronen en mist er 2 voor een volle schil. Bindingswaarde = 2.' },
+  { q:'Welke formule hoort bij calcium en chloor?', hint:'Ca heeft bindingswaarde 2, Cl heeft bindingswaarde 1.', opts:['CaCl','Ca₂Cl','CaCl₂','Ca₂Cl₂'], ans:2, exp:'Kruisregel: Ca (waarde 2) en Cl (waarde 1) → CaCl₂.' },
+  { q:'Wat is een kenmerk van een ionbinding?', hint:'Metaal geeft elektronen af aan niet-metaal.', opts:['Elektronen worden gedeeld','Elektronen bewegen vrij','Elektronen worden overgedragen','Er zijn geen elektronen betrokken'], ans:2, exp:'Bij een ionbinding draagt een metaal elektronen over aan een niet-metaal. Het metaal wordt positief ion, het niet-metaal negatief.' },
+  { q:'Water (H₂O) is polair. Wat betekent dat?', hint:'Denk aan de verdeling van elektronen.', opts:['Het molecuul lost niet op in water','De elektronen zijn ongelijk verdeeld','Het molecuul heeft geen binding','Het is een metaalverbinding'], ans:1, exp:'Polair betekent dat de elektronen ongelijk verdeeld zijn. Bij H₂O trekt zuurstof de elektronen sterker naar zich toe dan waterstof.' },
+  { q:'Welk molecuul heeft een drievoudige binding?', hint:'Kijk naar het meest stabiele gasmolecuul in de lucht.', opts:['H₂O','CO₂','N₂','CH₄'], ans:2, exp:'N₂ heeft een drievoudige binding: N ≡ N. Dit is een van de sterkste bindingen in de chemie.' },
+  { q:'Wat is het atoomnummer van koolstof (C)?', hint:'Atoomnummer = aantal protonen.', opts:['4','6','8','12'], ans:1, exp:'Koolstof heeft atoomnummer 6: 6 protonen en 6 elektronen.' },
+  { q:'Welk type verbinding heeft een hoog smeltpunt en geleidt stroom als het oplost?', hint:'Denk aan keukenzout.', opts:['Polaire moleculen','Apolaire moleculen','Ionverbindingen','Metalen'], ans:2, exp:'Ionverbindingen zoals NaCl hebben hoge smeltpunten en geleiden stroom in oplossing doordat de ionen vrij kunnen bewegen.' },
+  { q:'Hoeveel valentie-elektronen heeft natrium (Na)?', hint:'Na heeft atoomnummer 11: schillen 2-8-1.', opts:['1','2','3','8'], ans:0, exp:'Natrium heeft schilverdeling 2-8-1. De buitenste schil heeft 1 elektron → 1 valentie-elektron.' },
+  { q:'Wat is de molecuulformule van methaan?', hint:'Koolstof heeft bindingswaarde 4, waterstof 1.', opts:['CH₂','CH₃','CH₄','C₂H₆'], ans:2, exp:'Koolstof heeft bindingswaarde 4 en waterstof 1 → methaan is CH₄.' },
+  { q:'Bij een metaalbinding bewegen elektronen...', hint:'Dit verklaart waarom metalen goed geleiden.', opts:['Alleen tussen twee atomen','Niet — ze staan stil','Vrij door het rooster','Ze worden overgedragen'], ans:2, exp:'Bij een metaalbinding bewegen elektronen vrij door het rooster van positieve metaalionen. Dit maakt metalen goede geleiders.' },
+  { q:'Welke verbinding is een voorbeeld van een ionbinding?', hint:'Metaal + niet-metaal = ionbinding.', opts:['H₂O','O₂','NaCl','CO₂'], ans:2, exp:'NaCl (natriumchloride) is een ionverbinding: natrium (metaal) geeft een elektron aan chloor (niet-metaal).' },
+  { q:'Waarvoor gebruik je de kruisregel?', hint:'Denk aan het opstellen van formules.', opts:['Atoomnummers berekenen','Scheikundige formules opstellen','Elektronen tellen','De naam van een atoom bepalen'], ans:1, exp:'De kruisregel gebruik je om de juiste scheikundige formule te bepalen door de bindingswaarden te kruisen.' },
+  { q:'CO₂ is lineair van vorm. Wat volgt hieruit?', hint:'Vergelijk met H₂O dat gebogen is.', opts:['Het is polair','Het is apolair','Het heeft ionbindingen','Het lost niet op in water'], ans:1, exp:'CO₂ is apolair: hoewel de C=O bindingen zelf polair zijn, heffen ze elkaar op door de lineaire (symmetrische) vorm.' },
+  { q:'Welk atoom heeft de hoogste elektronegativiteit?', hint:'Elektronegativiteit = kracht waarmee elektronen worden aangetrokken.', opts:['Na (0,9)','C (2,5)','O (3,4)','H (2,1)'], ans:2, exp:'Zuurstof heeft de hoogste elektronegativiteit (3,4). Daardoor trekt het elektronen het sterkst naar zich toe.' },
+  { q:'Wat is de naam van de verbinding Al₂O₃?', hint:'Metaal + niet-metaal krijgt uitgang -oxide.', opts:['Aluminiumdioxide','Dialuminiumoxide','Aluminiumoxide','Aluminiumtrioxyde'], ans:2, exp:'Al₂O₃ heet aluminiumoxide.' },
+  { q:'Hoeveel bindingen kan koolstof (C) vormen?', hint:'Kijk naar de bindingswaarde van C.', opts:['1','2','3','4'], ans:3, exp:'Koolstof heeft bindingswaarde 4 en kan dus 4 bindingen vormen, zoals in CH₄.' },
+  { q:'Welk gas maakt 78% uit van de lucht?', hint:'Apolair molecuul met een drievoudige binding.', opts:['O₂','CO₂','N₂','H₂'], ans:2, exp:'Stikstof (N₂) maakt circa 78% uit van de lucht. Zuurstof (O₂) is zo\'n 21%.' },
+  { q:'Wat wordt bedoeld met "edelgasconfiguratie"?', hint:'Edelgassen zijn zeer stabiel.', opts:['Een atoom met 0 elektronen','Een atoom met een volle buitenste schil','Een atoom dat nooit reageert','Een atoom met meer protonen dan elektronen'], ans:1, exp:'Edelgasconfiguratie = de buitenste elektronenschil is volledig gevuld. Atomen streven hiernaar — dit drijft het vormen van bindingen.' },
+];
+
+let currentQ = 0, score = 0, answered = false, shuffled = [];
+
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'toets' && currentQ === 0 && shuffled.length === 0) startQuiz();
+}
+
+function showAtom(i) {
+  const a = atoms[i];
+  document.getElementById('atom-list').style.display = 'none';
+  document.getElementById('atom-detail').style.display = 'block';
+  document.getElementById('d-symbol-box').textContent = a.sym;
+  document.getElementById('d-symbol-box').style.background = a.color;
+  document.getElementById('d-symbol-box').style.color = a.textColor;
+  document.getElementById('d-name').textContent = a.name;
+  document.getElementById('d-latin').textContent = a.latin;
+  document.getElementById('d-group').textContent = a.group;
+  document.getElementById('d-num').textContent = a.num;
+  document.getElementById('d-mass').textContent = a.mass;
+  document.getElementById('d-valence').textContent = a.valence + ' elektronen';
+  document.getElementById('d-binding').textContent = a.binding;
+  document.getElementById('d-en').textContent = a.en;
+  document.getElementById('d-desc').textContent = a.desc;
+  const sc = document.getElementById('d-shells');
+  sc.innerHTML = '';
+  a.shells.forEach(sh => {
+    const row = document.createElement('div');
+    row.className = 'shell-row';
+    row.innerHTML = '<span class="shell-label">' + sh.n + '</span><div class="shell-dots">' +
+      Array.from({length:sh.max},(_,i) => '<div class="dot ' + (i<sh.total?'dot-filled':'dot-empty') + '">' + (i<sh.total?'e':'·') + '</div>').join('') +
+      '</div>';
+    sc.appendChild(row);
+  });
+  window.scrollTo(0,0);
+}
+
+function showMol(i) {
+  const m = molecules[i];
+  document.getElementById('mol-panel').innerHTML =
+    '<div style="font-size:38px;font-weight:500;margin-bottom:6px">' + m.formula + '</div>' +
+    '<div style="font-size:16px;color:#666;margin-bottom:10px">' + m.name + '</div>' +
+    '<span class="badge ' + m.typeClass + '" style="margin-bottom:14px;display:inline-block">' + m.type + '</span>' +
+    '<div class="detail-row"><span>Binding</span><span>' + m.binding + '</span></div>' +
+    '<div class="detail-row"><span>Samenstelling</span><span>' + m.count + '</span></div>' +
+    '<div class="detail-row"><span>Structuur</span><span style="text-align:right;max-width:55%">' + m.struct + '</span></div>' +
+    '<div class="detail-row"><span>Valentie</span><span style="text-align:right;max-width:55%">' + m.valence + '</span></div>' +
+    '<div style="margin-top:12px;font-size:14px;color:#555;line-height:1.65">' + m.props + '</div>';
+  document.getElementById('mol-detail').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+function startQuiz() {
+  shuffled = [...questions].sort(() => Math.random() - 0.5);
+  currentQ = 0; score = 0; answered = false;
+  document.getElementById('quiz-main').style.display = 'block';
+  document.getElementById('quiz-result').style.display = 'none';
+  loadQ();
+}
+
+function loadQ() {
+  answered = false;
+  const q = shuffled[currentQ];
+  document.getElementById('q-counter').textContent = 'Vraag ' + (currentQ+1) + ' van ' + shuffled.length;
+  document.getElementById('q-score').textContent = 'Score: ' + score;
+  document.getElementById('q-progress').style.width = Math.round(((currentQ+1)/shuffled.length)*100) + '%';
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-hint').textContent = q.hint;
+  const fb = document.getElementById('q-feedback');
+  fb.style.display = 'none'; fb.className = 'quiz-feedback';
+  document.getElementById('q-next').style.display = 'none';
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = '';
+  q.opts.forEach((o,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = o;
+    btn.onclick = () => answer(i);
+    opts.appendChild(btn);
+  });
+}
+
+function answer(i) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentQ];
+  document.querySelectorAll('.quiz-opt').forEach((b,j) => {
+    b.classList.add('disabled');
+    if (j === q.ans) b.classList.add('correct');
+    else if (j === i && i !== q.ans) b.classList.add('wrong');
+  });
+  const fb = document.getElementById('q-feedback');
+  if (i === q.ans) { score++; fb.className = 'quiz-feedback correct'; fb.textContent = '✓ Goed! ' + q.exp; }
+  else { fb.className = 'quiz-feedback wrong'; fb.textContent = '✗ Niet helemaal. ' + q.exp; }
+  fb.style.display = 'block';
+  document.getElementById('q-score').textContent = 'Score: ' + score;
+  const nxt = document.getElementById('q-next');
+  nxt.style.display = 'block';
+  nxt.textContent = currentQ < shuffled.length-1 ? 'Volgende vraag →' : 'Bekijk resultaat →';
+}
+
+function nextQ() {
+  currentQ++;
+  if (currentQ >= shuffled.length) { showResult(); return; }
+  loadQ();
+}
+
+function showResult() {
+  document.getElementById('quiz-main').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'block';
+  const pct = Math.round((score / shuffled.length) * 100);
+  document.getElementById('r-score').textContent = score + '/' + shuffled.length;
+  document.getElementById('r-label').textContent = pct >= 80 ? 'Uitstekend! Je bent klaar voor de toets.' : pct >= 60 ? 'Goed bezig! Herhaal de onderdelen die mis gingen.' : 'Blijf oefenen! Lees de theorie nog eens door.';
+  document.getElementById('r-details').innerHTML = pct + '% correct — ' + score + ' goed, ' + (shuffled.length-score) + ' fout.<br>Bekijk de uitleg bij de vragen om te zien wat je nog moet leren.';
+}
+</script>
+</body>
+</html>
